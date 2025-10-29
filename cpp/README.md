@@ -410,5 +410,3 @@ ament_target_dependencies(my_node rclcpp)
 3. Get comfortable with classes
 4. Learn smart pointers
 5. Move to ROS2 tutorials
-
-**Remember:** You don't need to master everything before starting ROS2. Learn the basics, then learn more as you encounter it in ROS2 code!
