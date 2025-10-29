@@ -539,5 +539,3 @@ negate: 0                 # Whether to invert colors
 4. Practice map building
 5. Learn map saving/loading
 6. Move to Nav2 for navigation with saved maps
-
-**Pro Tip:** Good odometry is crucial! Bad odometry = bad SLAM!
