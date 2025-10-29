@@ -623,5 +623,3 @@ ros2 launch nav2_bringup navigation_launch.py log_level:=debug
 - Parameters Guide: docs.nav2.org/configuration
 - Tutorials: docs.nav2.org/tutorials
 - Community: discourse.ros.org
-
-**Remember:** Nav2 is complex, but start simple and build up!
