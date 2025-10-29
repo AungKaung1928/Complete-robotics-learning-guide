@@ -11,15 +11,15 @@ This repository contains everything you need to go from **complete beginner** to
 ### 📘 **7 Complete Guides** 
 Detailed explanations for beginners to intermediate learners:
 
-| Topic | Lines | Focus |
-|-------|-------|-------|
-| **C++** | 414 | Programming for ROS2 (pointers, classes, smart pointers) |
-| **Python** | 528 | Alternative to C++ (classes, type hints, async) |
-| **ROS2** | 188 | Robot software framework (nodes, topics, TF) |
-| **Linux** | 474 | Command-line essentials (files, permissions, bash) |
-| **Docker** | 618 | Containerization (images, volumes, compose) |
-| **SLAM** | 543 | Mapping & localization (algorithms, sensors) |
-| **Nav2** | 627 | Autonomous navigation (planning, control) |
+| Topic |  Focus |
+|-------|-------|
+| **C++** | Programming for ROS2 (pointers, classes, smart pointers) |
+| **Python** | Alternative to C++ (classes, type hints, async) |
+| **ROS2** | Robot software framework (nodes, topics, TF) |
+| **Linux** | Command-line essentials (files, permissions, bash) |
+| **Docker** | Containerization (images, volumes, compose) |
+| **SLAM** | Mapping & localization (algorithms, sensors) |
+| **Nav2** | Autonomous navigation (planning, control) |
 
 ---
 
