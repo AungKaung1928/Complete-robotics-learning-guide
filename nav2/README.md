@@ -616,10 +616,3 @@ ros2 launch nav2_bringup navigation_launch.py log_level:=debug
 **Pro Tip:** Good localization = Good navigation. Bad odometry = Bad navigation!
 
 ---
-
-## Resources
-
-- Nav2 Documentation: navigation.ros.org
-- Parameters Guide: docs.nav2.org/configuration
-- Tutorials: docs.nav2.org/tutorials
-- Community: discourse.ros.org
