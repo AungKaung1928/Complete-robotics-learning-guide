@@ -184,5 +184,3 @@ ros2 node info /node_name
 - Using standard message types
 - Understanding QoS profiles
 - Working with TF2 transforms
-
-**Next:** Install ROS2 Humble and complete official tutorials!
