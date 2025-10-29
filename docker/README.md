@@ -614,5 +614,3 @@ docker exec -it my_robot bash
 3. Practice basic commands
 4. Create simple Dockerfile
 5. Try Docker Compose with multiple nodes
-
-**Pro Tip:** Start simple! Use Docker when you need it, not because you can!
