@@ -28,9 +28,8 @@ Detailed explanations for beginners to intermediate learners:
 ### Path 1: Complete Beginner
 **"I'm new to programming and Linux"**
 
-1. Read [LEARNING_ROADMAP.md](LEARNING_ROADMAP.md)
-2. Start with [linux/README.md](linux/README.md)
-3. Learn [python/README.md](python/README.md) *(easier)* OR [cpp/README.md](cpp/README.md)
+1. Start with [linux/README.md](linux/README.md)
+2. Learn [python/README.md](python/README.md) *(easier)* OR [cpp/README.md](cpp/README.md)
 
 ---
 
