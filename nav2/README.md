@@ -612,7 +612,5 @@ ros2 launch nav2_bringup navigation_launch.py log_level:=debug
 5. Test single-goal navigation
 6. Try waypoint navigation
 7. Move to real robot
-
-**Pro Tip:** Good localization = Good navigation. Bad odometry = Bad navigation!
-
+   
 ---
