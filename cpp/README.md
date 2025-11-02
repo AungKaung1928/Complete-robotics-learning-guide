@@ -62,7 +62,7 @@ void myFunction() {
 
 ---
 
-## 3. Pointers & References (IMPORTANT!)
+## 3. Pointers & References (VERY IMPORTANT!)
 
 ### What Are Pointers?
 Pointers store **memory addresses** rather than values.
