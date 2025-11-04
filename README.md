@@ -1,4 +1,4 @@
-# 🤖 Robotics Fundamentals Guide
+# 🤖 Robotics Software Engineering Fundamentals Guide
 A comprehensive learning resource for robotics development covering essential technologies from beginner to intermediate level.
 
 ## 📚 What's Inside
