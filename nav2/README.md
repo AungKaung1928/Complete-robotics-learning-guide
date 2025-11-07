@@ -1,7 +1,7 @@
 # Nav2 Fundamentals
 **ROS2 Navigation Stack**
 
-## What is Nav2?
+## What is Navigation 2 Nav2?
 
 **Nav2 (Navigation2)** is the ROS2 navigation framework that enables robots to autonomously move from point A to point B while avoiding obstacles.
 
