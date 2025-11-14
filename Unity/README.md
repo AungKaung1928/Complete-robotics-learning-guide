@@ -10,7 +10,7 @@
 7. [Physics & Sensors](#physics--sensors)
 8. [Vehicle Simulation](#vehicle-simulation)
 9. [Camera & Perception](#camera--perception)
-10. [Unity ML-Agents (AI)](#unity-ml-agents)
+10. [Unity ML-Agents (AI)](#unity-ml-agents-ai)
 11. [Common Tasks](#common-tasks)
 12. [Best Practices](#best-practices)
 
