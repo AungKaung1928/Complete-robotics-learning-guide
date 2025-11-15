@@ -11,7 +11,7 @@
 - SLAM solves both simultaneously!
 
 ### Why SLAM Matters:
-- Autonomous navigation
+- Autonomous navigation and self-driving 
 - Indoor mapping
 - Unknown environment exploration
 - GPS-denied areas (buildings, caves)
