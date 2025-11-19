@@ -706,7 +706,7 @@ services:
 
 ---
 
-## Interview Questions
+## Q & A Session
 
 **Q: "What is Docker?"**
 **A:** Containerization platform that packages applications with dependencies into isolated containers that run consistently anywhere.
