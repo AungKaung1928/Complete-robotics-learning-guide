@@ -76,6 +76,9 @@ Camera Node (publishes to "/camera/image")
     ↓
 Object Detector Node (subscribes to "/camera/image")
 ```
+```
+Services = Sync, Topics = Async, Actions = Both
+```
 
 **Key Points:**
 - One-way communication
