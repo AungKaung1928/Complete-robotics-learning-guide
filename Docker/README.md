@@ -773,7 +773,3 @@ services:
 ```
 
 ---
-
-**Master these Docker basics and you'll streamline your ROS2/embedded development workflow! 🐳🚀**
-
-**Recommended: Practice with official ROS2 Docker images before creating custom ones.**
