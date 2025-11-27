@@ -1049,6 +1049,495 @@ ros2 run my_package moveit_example
 
 ---
 
+Here are the new sections to add after your MoveIt2 section:
+
+---
+
+### 11. ROS2 Control
+**What is ROS2 Control?**
+Hardware abstraction layer for controlling real robots and simulations.
+
+**Key Components:**
+- **Hardware Interface**: Connects to actual hardware (motors, sensors)
+- **Controller Manager**: Manages active controllers
+- **Controllers**: Logic for joint/velocity control
+
+**Common Controllers:**
+- `joint_state_broadcaster` - Publishes joint states
+- `diff_drive_controller` - Controls differential drive robots
+- `joint_trajectory_controller` - Executes arm trajectories
+
+#### C++ Example: Reading Joint States
+```cpp
+#include <memory>
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
+
+class JointStateMonitor : public rclcpp::Node
+{
+public:
+  JointStateMonitor() : Node("joint_state_monitor")
+  {
+    subscription_ = this->create_subscription<sensor_msgs::msg::JointState>(
+      "/joint_states", 10,
+      std::bind(&JointStateMonitor::joint_callback, this, std::placeholders::_1));
+  }
+
+private:
+  void joint_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
+  {
+    if (!msg->name.empty()) {
+      RCLCPP_INFO(this->get_logger(), "Joint '%s': position=%.3f, velocity=%.3f",
+                  msg->name[0].c_str(), msg->position[0], msg->velocity[0]);
+    }
+  }
+
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr subscription_;
+};
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<JointStateMonitor>());
+  rclcpp::shutdown();
+  return 0;
+}
+```
+
+**Commands:**
+```bash
+# List controllers
+ros2 control list_controllers
+
+# Load controller
+ros2 control load_controller joint_state_broadcaster
+
+# Switch controllers
+ros2 control switch_controllers --activate diff_drive_controller
+```
+
+---
+
+### 12. Debugging with RViz2
+**What is RViz2?**
+3D visualization tool for robot state, sensor data, and planning.
+
+**Essential Displays:**
+- **RobotModel**: Shows URDF model
+- **TF**: Coordinate frame visualization
+- **LaserScan**: Lidar data
+- **Map**: Occupancy grid
+- **Camera**: Image streams
+- **Path**: Planned trajectories
+
+**RViz Configuration:**
+```bash
+# Save config
+File → Save Config As → my_config.rviz
+
+# Load config in launch file
+```
+
+#### Python Example: Launch with RViz Config
+```python
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    rviz_config = os.path.join(
+        get_package_share_directory('my_package'),
+        'rviz',
+        'my_config.rviz'
+    )
+
+    return LaunchDescription([
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            arguments=['-d', rviz_config],
+            output='screen'
+        ),
+    ])
+```
+
+**Debugging Tips:**
+- Check `Fixed Frame` matches your TF tree root
+- Use `Marker` display for custom visualizations
+- Monitor topic `/diagnostics` for system health
+
+---
+
+### 13. Coordinate Frames (TF Tree)
+**Standard ROS2 Frame Hierarchy:**
+```
+map (global, fixed)
+  └── odom (local, drifts over time)
+       └── base_link (robot center)
+            ├── base_footprint (ground projection)
+            ├── laser (lidar sensor)
+            ├── camera_link (camera)
+            └── imu_link (IMU sensor)
+```
+
+**Frame Definitions:**
+- **`map`**: Global reference frame, doesn't move, corrected by localization
+- **`odom`**: Smooth local frame, drifts over time, updated by wheel encoders
+- **`base_link`**: Robot's center, all other frames defined relative to this
+- **`base_footprint`**: Projection of base_link on ground (z=0)
+
+**Key Relationships:**
+- `map → odom`: Published by localization (AMCL, SLAM)
+- `odom → base_link`: Published by odometry node
+- `base_link → sensor_link`: Static, defined in URDF
+
+#### C++ Example: Transform Point Between Frames
+```cpp
+#include <memory>
+#include "rclcpp/rclcpp.hpp"
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "geometry_msgs/msg/point_stamped.hpp"
+
+class FrameTransformer : public rclcpp::Node
+{
+public:
+  FrameTransformer() : Node("frame_transformer")
+  {
+    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
+    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+    
+    timer_ = this->create_wall_timer(
+      std::chrono::seconds(2),
+      std::bind(&FrameTransformer::transform_point, this));
+  }
+
+private:
+  void transform_point()
+  {
+    geometry_msgs::msg::PointStamped point_in_laser;
+    point_in_laser.header.frame_id = "laser";
+    point_in_laser.header.stamp = this->now();
+    point_in_laser.point.x = 1.0;  // 1m in front of laser
+    
+    try {
+      auto point_in_map = tf_buffer_->transform(
+        point_in_laser, "map", tf2::durationFromSec(1.0));
+      
+      RCLCPP_INFO(this->get_logger(), 
+        "Point in map frame: [%.2f, %.2f, %.2f]",
+        point_in_map.point.x, point_in_map.point.y, point_in_map.point.z);
+        
+    } catch (tf2::TransformException &ex) {
+      RCLCPP_WARN(this->get_logger(), "%s", ex.what());
+    }
+  }
+
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  rclcpp::TimerBase::SharedPtr timer_;
+};
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<FrameTransformer>());
+  rclcpp::shutdown();
+  return 0;
+}
+```
+
+---
+
+### 14. Localization (AMCL)
+**What is Localization?**
+Determining robot's position in a known map using sensor data.
+
+**AMCL (Adaptive Monte Carlo Localization):**
+- Uses particle filter to estimate pose
+- Requires: map, laser scan, odometry
+- Publishes: `map → odom` transform
+
+**Key Topics:**
+- **Input**: `/scan`, `/odom`, `/map`
+- **Output**: `/tf` (map→odom), `/amcl_pose`
+- **Initial Pose**: `/initialpose` (set in RViz)
+
+#### Setting Initial Pose (2D Pose Estimate):
+```bash
+# In RViz2: Click "2D Pose Estimate" → Click on map → Drag arrow
+```
+
+#### C++ Example: Publish Initial Pose Programmatically
+```cpp
+#include <memory>
+#include "rclcpp/rclcpp.hpp"
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
+
+class InitialPoseSetter : public rclcpp::Node
+{
+public:
+  InitialPoseSetter() : Node("initial_pose_setter")
+  {
+    pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+      "/initialpose", 10);
+    
+    timer_ = this->create_wall_timer(
+      std::chrono::seconds(1),
+      std::bind(&InitialPoseSetter::set_initial_pose, this));
+  }
+
+private:
+  void set_initial_pose()
+  {
+    auto pose_msg = geometry_msgs::msg::PoseWithCovarianceStamped();
+    pose_msg.header.frame_id = "map";
+    pose_msg.header.stamp = this->now();
+    
+    // Set position (x, y in map frame)
+    pose_msg.pose.pose.position.x = 0.0;
+    pose_msg.pose.pose.position.y = 0.0;
+    pose_msg.pose.pose.orientation.w = 1.0;
+    
+    // Set covariance (uncertainty)
+    pose_msg.pose.covariance[0] = 0.25;   // x variance
+    pose_msg.pose.covariance[7] = 0.25;   // y variance
+    pose_msg.pose.covariance[35] = 0.068; // yaw variance
+    
+    pose_pub_->publish(pose_msg);
+    RCLCPP_INFO(this->get_logger(), "Initial pose set");
+    timer_->cancel();  // Only publish once
+  }
+
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_pub_;
+  rclcpp::TimerBase::SharedPtr timer_;
+};
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<InitialPoseSetter>());
+  rclcpp::shutdown();
+  return 0;
+}
+```
+
+**Launch AMCL:**
+```bash
+ros2 launch nav2_bringup localization_launch.py map:=my_map.yaml
+```
+
+---
+
+### 15. Navigation Waypoints
+**What are Waypoints?**
+Sequence of goal poses for autonomous navigation.
+
+**Navigation Stack (Nav2) Flow:**
+1. Send goal pose
+2. Global planner creates path
+3. Local planner follows path while avoiding obstacles
+4. Robot reaches goal
+
+#### C++ Example: Send Navigation Goal
+```cpp
+#include <memory>
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "nav2_msgs/action/navigate_to_pose.hpp"
+
+class WaypointNavigator : public rclcpp::Node
+{
+public:
+  using NavigateToPose = nav2_msgs::action::NavigateToPose;
+  using GoalHandleNav = rclcpp_action::ClientGoalHandle<NavigateToPose>;
+
+  WaypointNavigator() : Node("waypoint_navigator")
+  {
+    client_ = rclcpp_action::create_client<NavigateToPose>(this, "navigate_to_pose");
+    
+    if (!client_->wait_for_action_server(std::chrono::seconds(10))) {
+      RCLCPP_ERROR(this->get_logger(), "Action server not available");
+      return;
+    }
+    
+    send_goal(2.0, 1.0, 0.0);  // x, y, yaw
+  }
+
+private:
+  void send_goal(double x, double y, double yaw)
+  {
+    auto goal_msg = NavigateToPose::Goal();
+    goal_msg.pose.header.frame_id = "map";
+    goal_msg.pose.header.stamp = this->now();
+    goal_msg.pose.pose.position.x = x;
+    goal_msg.pose.pose.position.y = y;
+    
+    // Convert yaw to quaternion
+    tf2::Quaternion q;
+    q.setRPY(0, 0, yaw);
+    goal_msg.pose.pose.orientation = tf2::toMsg(q);
+    
+    auto send_goal_options = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
+    send_goal_options.result_callback =
+      std::bind(&WaypointNavigator::result_callback, this, std::placeholders::_1);
+    
+    RCLCPP_INFO(this->get_logger(), "Sending goal: x=%.2f, y=%.2f", x, y);
+    client_->async_send_goal(goal_msg, send_goal_options);
+  }
+
+  void result_callback(const GoalHandleNav::WrappedResult & result)
+  {
+    if (result.code == rclcpp_action::ResultCode::SUCCEEDED) {
+      RCLCPP_INFO(this->get_logger(), "Goal reached!");
+    } else {
+      RCLCPP_ERROR(this->get_logger(), "Navigation failed");
+    }
+    rclcpp::shutdown();
+  }
+
+  rclcpp_action::Client<NavigateToPose>::SharedPtr client_;
+};
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<WaypointNavigator>());
+  return 0;
+}
+```
+
+#### C++ Example: Multiple Waypoints Sequence
+```cpp
+#include <memory>
+#include <vector>
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "tf2/LinearMath/Quaternion.h"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+
+class MultiWaypointNavigator : public rclcpp::Node
+{
+public:
+  using NavigateToPose = nav2_msgs::action::NavigateToPose;
+  using GoalHandleNav = rclcpp_action::ClientGoalHandle<NavigateToPose>;
+
+  MultiWaypointNavigator() : Node("multi_waypoint_navigator"), current_waypoint_(0)
+  {
+    // Define waypoints (x, y, yaw)
+    waypoints_ = {{1.0, 0.0, 0.0}, {2.0, 1.0, 1.57}, {0.0, 0.0, 3.14}};
+    
+    client_ = rclcpp_action::create_client<NavigateToPose>(this, "navigate_to_pose");
+    
+    if (!client_->wait_for_action_server(std::chrono::seconds(10))) {
+      RCLCPP_ERROR(this->get_logger(), "Action server not available");
+      return;
+    }
+    
+    send_next_waypoint();
+  }
+
+private:
+  void send_next_waypoint()
+  {
+    if (current_waypoint_ >= waypoints_.size()) {
+      RCLCPP_INFO(this->get_logger(), "All waypoints completed!");
+      rclcpp::shutdown();
+      return;
+    }
+    
+    auto [x, y, yaw] = waypoints_[current_waypoint_];
+    
+    auto goal_msg = NavigateToPose::Goal();
+    goal_msg.pose.header.frame_id = "map";
+    goal_msg.pose.header.stamp = this->now();
+    goal_msg.pose.pose.position.x = x;
+    goal_msg.pose.pose.position.y = y;
+    
+    tf2::Quaternion q;
+    q.setRPY(0, 0, yaw);
+    goal_msg.pose.pose.orientation = tf2::toMsg(q);
+    
+    auto send_goal_options = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
+    send_goal_options.result_callback =
+      std::bind(&MultiWaypointNavigator::result_callback, this, std::placeholders::_1);
+    
+    RCLCPP_INFO(this->get_logger(), "Waypoint %zu: x=%.2f, y=%.2f", 
+                current_waypoint_ + 1, x, y);
+    client_->async_send_goal(goal_msg, send_goal_options);
+  }
+
+  void result_callback(const GoalHandleNav::WrappedResult & result)
+  {
+    if (result.code == rclcpp_action::ResultCode::SUCCEEDED) {
+      RCLCPP_INFO(this->get_logger(), "Waypoint %zu reached!", current_waypoint_ + 1);
+      current_waypoint_++;
+      send_next_waypoint();
+    } else {
+      RCLCPP_ERROR(this->get_logger(), "Navigation failed at waypoint %zu", current_waypoint_ + 1);
+      rclcpp::shutdown();
+    }
+  }
+
+  rclcpp_action::Client<NavigateToPose>::SharedPtr client_;
+  std::vector<std::tuple<double, double, double>> waypoints_;
+  size_t current_waypoint_;
+};
+
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<MultiWaypointNavigator>());
+  return 0;
+}
+```
+
+**Set Goal in RViz2:**
+```bash
+# Click "Nav2 Goal" button → Click on map → Drag arrow for orientation
+```
+
+**Navigation Commands:**
+```bash
+# Launch Nav2 stack
+ros2 launch nav2_bringup navigation_launch.py
+
+# Send goal from CLI
+ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose "
+{
+  pose: {
+    header: {frame_id: 'map'},
+    pose: {
+      position: {x: 2.0, y: 1.0, z: 0.0},
+      orientation: {w: 1.0}
+    }
+  }
+}"
+```
+
+**Update CMakeLists.txt:**
+```cmake
+find_package(nav2_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+
+add_executable(waypoint_navigator src/waypoint_navigator.cpp)
+ament_target_dependencies(waypoint_navigator 
+  rclcpp rclcpp_action nav2_msgs tf2 tf2_geometry_msgs)
+```
+
+**Update package.xml:**
+```xml
+<depend>nav2_msgs</depend>
+<depend>tf2</depend>
+<depend>tf2_geometry_msgs</depend>
+```
+
+---
+
 ## Important ROS2 Commands
 
 ### Building
