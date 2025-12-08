@@ -1,4 +1,3 @@
-# Test edit for Pair badge
 # 🤖 Robotics Software Engineering Fundamentals Guide
 A comprehensive learning resource for robotics development covering essential technologies from beginner to intermediate level.
 
