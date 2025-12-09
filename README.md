@@ -1,7 +1,7 @@
 # 🤖 Robotics Software Engineering Fundamentals Guide
 A comprehensive learning resource for robotics development covering essential technologies from beginner to intermediate level.
 
-## 📚 What's Inside
+##  What's Inside
 This repository contains detailed explanations and practical guides for:
 - **C++** - Core programming concepts for robotics
 - **Python** - Scripting and rapid prototyping
@@ -16,7 +16,7 @@ This repository contains detailed explanations and practical guides for:
 - **TensorFlow** - Machine learning platform for robotics applications
 - **Unity** - Game engine for robotics simulation and visualization
 
-## 🚀 How to Use This Guide
+##  How to Use This Guide
 Each folder contains focused explanations on specific topics. Start with the basics and progress to more advanced concepts:
 
 1. **Linux** - Get comfortable with the command line first
