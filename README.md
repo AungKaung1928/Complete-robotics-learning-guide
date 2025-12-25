@@ -32,7 +32,7 @@ Each folder contains focused explanations on specific topics. Start with the bas
 5. **ROS2** - Dive into robot software development
 6. **Robotics Transforms Fundamentals** - Master coordinate frames and TF2
 7. **SLAM** - Understand mapping and localization
-8. **Nav2** - Master autonomous navigation
+8. **Nav2** - Master autonomous navigation system
 9. **Machine Learning** - Learn fundamental ML concepts
 10. **PyTorch** / **TensorFlow** - Add AI/ML capabilities to your robots
 11. **NVIDIA Robotics Stack** - Explore GPU-accelerated simulation and deployment
